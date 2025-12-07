@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -27,14 +28,15 @@ func showStatus() {
 	// 1. Fetch raw JSON from Pritunl
 	output, err := runCommand("pritunl", "list", "-j")
 	if err != nil {
-		fmt.Printf("❌ Error fetching status: %v\n", err)
+		// Use color.Red for errors
+		color.Red("❌ Error fetching status: %v", err)
 		return
 	}
 
 	// 2. Parse JSON
 	var profiles []Profile
 	if err := json.Unmarshal([]byte(output), &profiles); err != nil {
-		fmt.Printf("❌ JSON Parse Error: %v\n", err)
+		color.Red("❌ JSON Parse Error: %v", err)
 		return
 	}
 
@@ -44,53 +46,49 @@ func showStatus() {
 	}
 
 	// 3. Render Dashboard
-	fmt.Println("--- 🌐 VPN Connection Status ---")
+	// Print a bold header
+	color.New(color.Bold).Println("--- 🌐 VPN Connection Status ---")
 
 	for _, p := range profiles {
 		printProfile(p)
 	}
 
-	fmt.Println("--------------------------------")
+	color.New(color.Bold).Println("--------------------------------")
 }
 
 func printProfile(p Profile) {
-	// --- Name Cleanup Logic ---
-	// Replicating your JQ logic: sub(".*sso_"; "") | sub("vpnusers.*"; "") | ascii_upcase
+	// --- Name Cleanup Logic (Same as before) ---
 	cleanName := p.Name
-
-	// Remove prefix ".*sso_"
 	rePrefix := regexp.MustCompile(`(?i).*sso_`)
 	cleanName = rePrefix.ReplaceAllString(cleanName, "")
-
-	// Remove suffix "vpnusers.*"
 	reSuffix := regexp.MustCompile(`(?i)vpnusers.*`)
 	cleanName = reSuffix.ReplaceAllString(cleanName, "")
-
-	// Uppercase
 	cleanName = strings.ToUpper(cleanName)
 
-	// --- Visuals ---
-	icon := "❌"
-	color := "\033[31m" // Red
-	statusText := "DISCONNECTED"
-	reset := "\033[0m"
+	// --- Visuals with fatih/color ---
+
+	// Create reusable color printers
+	// .SprintFunc() returns a function that wraps text in that color
+	green := color.New(color.FgGreen, color.Bold).SprintFunc()
+	red := color.New(color.FgRed, color.Bold).SprintFunc()
+	faint := color.New(color.Faint).SprintFunc() // Grey-ish for labels
 
 	if p.Connected {
-		icon = "✅"
-		color = "\033[32m" // Green
-		statusText = "CONNECTED"
+		// ✅ CONNECTED STATE
+		// Format: Icon + Green Arrow + Green Name
+		fmt.Printf("✅ %s Profile: %s\n", green("▶️"), green(cleanName))
+
+		fmt.Printf("   Status: %s\n", green("CONNECTED"))
+		fmt.Printf("   %s %s\n", faint("⏱️  Uptime:"), p.Status)
+		fmt.Printf("   %s %s\n", faint("💻 IP:"), p.ClientAddress)
+	} else {
+		// ❌ DISCONNECTED STATE
+		// Format: Icon + Red Arrow + Red Name
+		fmt.Printf("❌ %s Profile: %s\n", red("▶️"), red(cleanName))
+
+		fmt.Printf("   Status: %s\n", red("DISCONNECTED"))
 	}
 
-	// Print Header (Icon + Name)
-	fmt.Printf("%s %s▶️  Profile: %s%s\n", color, icon, cleanName, reset)
-
-	// Print Details
-	fmt.Printf("   Status: %s%s%s\n", color, statusText, reset)
-
-	if p.Connected {
-		fmt.Printf("   ⏱️  Uptime: %s\n", p.Status)
-		fmt.Printf("   💻 IP: %s\n", p.ClientAddress)
-	}
-	// Add a little spacer between items
+	// Spacer line
 	fmt.Println("")
 }
