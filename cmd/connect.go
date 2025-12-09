@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
+
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +42,7 @@ func performConnect(targetName string) {
 	// 1. Validate Target
 	config, exists := VPNTargets[targetName]
 	if !exists {
-		fmt.Printf("❌ Unknown target: '%s'. Available targets: dev, prod, drive-dev, drive-prod, life\n", targetName)
+		color.Red("❌ Unknown target: '%s'. Available targets: dev, prod, drive-dev, drive-prod, life\n", targetName)
 		os.Exit(1)
 	}
 
@@ -49,7 +51,7 @@ func performConnect(targetName string) {
 	// 2. Resolve the Pritunl ID dynamically
 	id, err := getProfileID(config.Regex)
 	if err != nil {
-		fmt.Printf("❌ Failed to find profile: %v\n", err)
+		color.Red("❌ Failed to find profile: %v", err)
 		os.Exit(1)
 	}
 
@@ -69,7 +71,7 @@ func performConnect(targetName string) {
 		}
 
 		cmdArgs = append(cmdArgs, "--password", otp)
-		fmt.Println("✅ Token generated successfully.")
+		color.Green("✅ Token generated successfully.")
 	}
 
 	// 5. Execute Connection
@@ -81,6 +83,6 @@ func performConnect(targetName string) {
 	}
 
 	// 6. Success Output
-	fmt.Println("✅ Command sent to Pritunl client.")
+	color.Green("✅ Command sent successfully.")
 	fmt.Println(output)
 }

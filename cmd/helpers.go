@@ -26,7 +26,7 @@ var VPNTargets = map[string]TargetConfig{
 	"prod":       {Regex: "sso_ackoprodvpnuser", CotpLabel: "prodvpn"},
 	"drive-dev":  {Regex: "AckoDrive-Dev", CotpLabel: "drivedevvpn"},
 	"drive-prod": {Regex: "sso_ackodrive_prod", CotpLabel: "", SSO: true},
-	"life":       {Regex: "sso_ackolifevpnusers", CotpLabel: "lifevpn"},
+	"life":       {Regex: "sso_ackolifevpnusers", CotpLabel: "", SSO: true},
 }
 
 // Profile matches the JSON output structure of 'pritunl list -j'
