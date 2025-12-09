@@ -104,7 +104,7 @@ func runCommand(name string, args ...string) (string, error) {
 	if name == "pritunl" {
 		cmdName = PritunlBinPath
 
-		// Safety check: verify the binary actually exists
+		// Safety check: verify the binary actually
 		if _, err := os.Stat(cmdName); os.IsNotExist(err) {
 			return "", fmt.Errorf("pritunl binary not found at %s", cmdName)
 		}
