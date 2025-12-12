@@ -8,9 +8,9 @@ before:
     # 1. Build a temporary binary
     - go build -o /tmp/vpn-gen .
     # 2. Generate the completions (assuming your CLI prints them to stdout)
-    - sh -c '/tmp/vpn-gen completions bash > completions.bash'
-    - sh -c '/tmp/vpn-gen completions zsh > completions.zsh'
-    - sh -c '/tmp/vpn-gen completions fish > completions.fish'
+    - sh -c '/tmp/vpn-gen completion bash > completions.bash'
+    - sh -c '/tmp/vpn-gen completion zsh > completions.zsh'
+    - sh -c '/tmp/vpn-gen completion fish > completions.fish'
 # 1. BUILD CONFIGURATION
 builds:
   - env:
