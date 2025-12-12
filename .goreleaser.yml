@@ -2,6 +2,15 @@ version: 1
 
 project_name: vpn
 
+before:
+  hooks:
+    - go mod tidy
+    # 1. Build a temporary binary
+    - go build -o /tmp/vpn-gen .
+    # 2. Generate the completions (assuming your CLI prints them to stdout)
+    - sh -c '/tmp/vpn-gen completions bash > completions.bash'
+    - sh -c '/tmp/vpn-gen completions zsh > completions.zsh'
+    - sh -c '/tmp/vpn-gen completions fish > completions.fish'
 # 1. BUILD CONFIGURATION
 builds:
   - env:
@@ -14,7 +23,9 @@ builds:
       - arm64  # Apple Silicon / ARM
     # This strips debug symbols to make the binary smaller
     ldflags:
-      - -s -w 
+      - -s -w
+      - -X github.com/PraveenPrabhuT/qvpn/cmd.Version={{.Version}}
+
 
 # 2. ARCHIVE CONFIGURATION (How the tar.gz looks)
 archives:
@@ -25,6 +36,9 @@ archives:
     # Include your license/readme if you have them
     files:
       - README.md
+      - completions.bash
+      - completions.zsh
+      - completions.fish
 
 # 3. CHECKSUMS (For security)
 checksum:
@@ -49,10 +63,12 @@ brews:
     install: |
       bin.install "vpn"
       
-      # Install completions if you generated them
-      # (We can add generation steps later, for now just binary)
-      # bash_completion.install "completions.bash" => "vpn"
-      # zsh_completion.install "completions.zsh" => "_vpn"
+      # Bash completions
+      bash_completion.install "completions.bash" => "vpn"
+      # Zsh completions (Must be renamed to _vpn)
+      zsh_completion.install "completions.zsh" => "_vpn"
+      # Fish completions
+      fish_completion.install "completions.fish" => "vpn.fish"
 
     # A simple test to verify it installed correctly
     test: |

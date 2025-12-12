@@ -31,7 +31,7 @@
           ldflags = [
             "-s"
             "-w"
-            "-X main.version=${self.shortRev or "dirty"}"
+            "-X github.com/PraveenPrabhuT/qvpn/cmd.Version=${self.shortRev or "dirty"}"
           ];
 
 

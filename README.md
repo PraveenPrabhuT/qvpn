@@ -60,7 +60,7 @@ go install .
 
 ## ⚙️ Configuration
 
-*Currently, VPN targets are defined in the source code. (JSON config support coming in v0.2.0)*
+*Currently, VPN targets are defined in the source code. (JSON config support coming in v1.0.0)*
 
 To add your own VPNs, edit `cmd/config.go` (or `helpers.go`):
 

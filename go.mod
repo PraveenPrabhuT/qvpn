@@ -1,4 +1,4 @@
-module vpn-cli
+module github.com/PraveenPrabhuT/qvpn
 
 go 1.25
 

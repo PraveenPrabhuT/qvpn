@@ -1,7 +1,7 @@
 package main
 
-import "vpn-cli/cmd"
+import "github.com/PraveenPrabhuT/qvpn/cmd"
 
 func main() {
-    cmd.Execute()
+	cmd.Execute()
 }
