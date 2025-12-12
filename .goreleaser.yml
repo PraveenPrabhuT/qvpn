@@ -1,0 +1,59 @@
+version: 2
+
+project_name: vpn
+
+# 1. BUILD CONFIGURATION
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin # macOS
+      - linux  # Linux
+    goarch:
+      - amd64  # Intel
+      - arm64  # Apple Silicon / ARM
+    # This strips debug symbols to make the binary smaller
+    ldflags:
+      - -s -w 
+
+# 2. ARCHIVE CONFIGURATION (How the tar.gz looks)
+archives:
+  - format: tar.gz
+    # The name of the file inside the zip (will just be "vpn")
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    # Include your license/readme if you have them
+    files:
+      - README.md
+      - LICENSE
+
+# 3. CHECKSUMS (For security)
+checksum:
+  name_template: 'checksums.txt'
+
+# 4. HOMEBREW TAP CONFIGURATION (The Magic Part)
+brews:
+  - name: vpn # The formula name (brew install vpn)
+    
+    # Where to push the formula
+    repository:
+      owner: PraveenPrabhuT  # CHANGE THIS!
+      name: homebrew-tools           # The repo name for your tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}" # We will set this secret later
+
+    # Description for Homebrew
+    description: "The Byte-Smith's VPN Orchestrator"
+    homepage: "https://github.com/PraveenPrabhuT/qvpn"
+
+    # Install instructions for Homebrew
+    install: |
+      bin.install "vpn"
+      
+      # Install completions if you generated them
+      # (We can add generation steps later, for now just binary)
+      # bash_completion.install "completions.bash" => "vpn"
+      # zsh_completion.install "completions.zsh" => "_vpn"
+
+    # A simple test to verify it installed correctly
+    test: |
+      system "#{bin}/vpn --help"
