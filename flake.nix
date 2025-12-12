@@ -12,7 +12,8 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        qvpnPackage = pkgs.buildGoModule {
+      packages = rec {
+        qvpn = pkgs.buildGoModule {
           pname = "qvpn";
           version = self.shortRev or "dirty";
 
@@ -20,14 +21,12 @@
 
           vendorHash = pkgs.lib.fakeHash; 
 
-          # Build flags (optional)
           ldflags = [
             "-s"
             "-w"
             "-X main.version=${self.shortRev or "dirty"}"
           ];
 
-          subPackages = [ "." ];
 
           meta = with pkgs.lib; {
             description = "A VPN CLI tool written in Go";
@@ -36,6 +35,10 @@
             maintainers = [ ];
             platforms = platforms.unix;
           };
+          };
+
+          # Set the default package (allows `nix build` without arguments)
+          default = qvpn;
         };
 
         devShells.default = pkgs.mkShell {
@@ -49,7 +52,7 @@
 
         apps.default = {
           type = "app";
-          program = "${self.packages.default}/bin/qvpn";
+          program = "${self.packages.${system}.default}/bin/qvpn";
         };
       }
     );
