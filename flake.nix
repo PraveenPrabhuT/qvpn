@@ -4,22 +4,29 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    gomod2nix.url = "github:nix-community/gomod2nix";
+    gomod2nix.inputs.nixpkgs.follows = "nixpkgs";
+    gomod2nix.inputs.flake-utils.follows = "flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, gomod2nix }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ gomod2nix.overlays.default ];
+        };
       in
       {
       packages = rec {
-        qvpn = pkgs.buildGoModule {
+        qvpn = pkgs.buildGoApplication {
           pname = "qvpn";
           version = self.shortRev or "dirty";
 
           src = ./.;
 
-          vendorHash = "sha256-ONgXkTSNH4KfSDMk9YUODs4GIOyEwxYYQgasoZJGpGM="; 
+          modules = ./gomod2nix.toml;
+          
 
           ldflags = [
             "-s"
@@ -47,6 +54,7 @@
             gotools
             gopls
             golangci-lint
+            gomod2nix.packages.${system}.default
           ];
         };
 
