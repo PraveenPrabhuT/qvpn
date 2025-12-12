@@ -40,10 +40,11 @@ brews:
       name: homebrew-tap           # The repo name for your tap
       token: "{{ .Env.GORELEASER_TOKEN }}" # We will set this secret later
 
+    directory: Formula
     # Description for Homebrew
     description: "The Byte-Smith's VPN Orchestrator"
     homepage: "https://github.com/PraveenPrabhuT/qvpn"
-
+    license: "MIT"
     # Install instructions for Homebrew
     install: |
       bin.install "vpn"
