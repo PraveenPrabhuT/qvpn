@@ -25,7 +25,6 @@ archives:
     # Include your license/readme if you have them
     files:
       - README.md
-      - LICENSE
 
 # 3. CHECKSUMS (For security)
 checksum:
