@@ -1,4 +1,4 @@
-version: 2
+version: 1
 
 project_name: vpn
 
@@ -38,8 +38,8 @@ brews:
     # Where to push the formula
     repository:
       owner: PraveenPrabhuT  # CHANGE THIS!
-      name: homebrew-tools           # The repo name for your tap
-      token: "{{ .Env.TAP_GITHUB_TOKEN }}" # We will set this secret later
+      name: homebrew-tap           # The repo name for your tap
+      token: "{{ .Env.GORELEASER_TOKEN }}" # We will set this secret later
 
     # Description for Homebrew
     description: "The Byte-Smith's VPN Orchestrator"
