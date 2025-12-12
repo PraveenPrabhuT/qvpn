@@ -19,7 +19,7 @@
 
           src = ./.;
 
-          vendorHash = pkgs.lib.fakeHash; 
+          vendorHash = "sha256-ONgXkTSNH4KfSDMk9YUODs4GIOyEwxYYQgasoZJGpGM="; 
 
           ldflags = [
             "-s"
