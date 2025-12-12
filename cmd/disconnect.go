@@ -85,7 +85,7 @@ func stopProfile(targetName string, silent bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to stop pritunl: %v", err)
 	}
-
+	defer UpdateStateFile()
 	if !silent {
 		fmt.Println("✅ Disconnected.")
 	} else {

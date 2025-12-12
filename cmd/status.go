@@ -54,6 +54,7 @@ func showStatus() {
 	}
 
 	color.New(color.Bold).Println("--------------------------------")
+	UpdateStateFile()
 }
 
 func printProfile(p Profile) {

@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
 // --- CONFIGURATION ---
 const PritunlBinPath = "/Applications/Pritunl.app/Contents/Resources/pritunl-client"
+const StateFileName = ".vpn_active"
 
 // TargetConfig defines the rules for a specific VPN connection
 type TargetConfig struct {
@@ -121,4 +123,61 @@ func runCommand(name string, args ...string) (string, error) {
 		return "", fmt.Errorf("%v: %s", err, stderr.String())
 	}
 	return strings.TrimSpace(out.String()), nil
+}
+
+// UpdateStateFile queries Pritunl and writes the active profile aliases to disk
+func UpdateStateFile() {
+	// 1. Get current real status from Pritunl
+	// We reuse your existing logic here, but focused on finding connected ones
+	output, err := runCommand("pritunl", "list", "-j")
+	if err != nil {
+		return // Silently fail to avoid breaking CLI flow
+	}
+
+	var profiles []Profile
+	if err := json.Unmarshal([]byte(output), &profiles); err != nil {
+		return
+	}
+
+	// 2. Load Config to map IDs back to Aliases (dev, prod, etc.)
+	config := VPNTargets
+
+	var activeAliases []string
+
+	for _, p := range profiles {
+		if p.Connected {
+			// Try to find the alias for this ID
+			foundAlias := ""
+			for alias, cfg := range config {
+				// We match loosely based on the Regex or Name
+				// Ideally, you'd match the exact ID, but we only store Regex.
+				// Re-running regex match here is safe enough.
+				matched, _ := regexp.MatchString("(?i)"+cfg.Regex, p.Name)
+				if matched {
+					foundAlias = alias
+					break
+				}
+			}
+
+			// If we found a configured alias, use it. Otherwise use the raw name.
+			if foundAlias != "" {
+				activeAliases = append(activeAliases, strings.ToUpper(foundAlias))
+			} else {
+				activeAliases = append(activeAliases, "UNKNOWN")
+			}
+		}
+	}
+
+	// 3. Write to ~/.vpn_active
+	home, _ := os.UserHomeDir()
+	statePath := filepath.Join(home, StateFileName)
+
+	if len(activeAliases) == 0 {
+		// Remove file if no VPNs connected (keeps Starship clean)
+		_ = os.Remove(statePath)
+	} else {
+		// Write "DEV PROD"
+		data := strings.Join(activeAliases, " ")
+		_ = os.WriteFile(statePath, []byte(data), 0644)
+	}
 }

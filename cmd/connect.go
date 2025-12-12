@@ -85,4 +85,6 @@ func performConnect(targetName string) {
 	// 6. Success Output
 	color.Green("✅ Command sent successfully.")
 	fmt.Println(output)
+	// UPDATE STARSHIP STATE
+	UpdateStateFile()
 }
