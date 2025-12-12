@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 
@@ -79,6 +80,13 @@ func performConnect(targetName string) {
 	output, err := runCommand("pritunl", cmdArgs...)
 	if err != nil {
 		fmt.Printf("❌ Pritunl Error: %s\n", err)
+		os.Exit(1)
+	}
+	// 2. WAIT for it to actually be connected (Max wait: 30 seconds)
+	// This blocks the prompt from returning until the VPN is usable.
+	err = waitForState(id, true, 30*time.Second)
+	if err != nil {
+		fmt.Println("\n❌ Connection timed out or failed.")
 		os.Exit(1)
 	}
 

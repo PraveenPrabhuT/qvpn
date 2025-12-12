@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -44,6 +45,8 @@ func disconnectAll() {
 		// even if one fails or isn't running.
 		_ = stopProfile(name, true)
 	}
+	// Update state file once at the very end
+	UpdateStateFile()
 	fmt.Println("✅ Disconnect sequence complete.")
 }
 
@@ -54,6 +57,8 @@ func performDisconnect(targetName string) {
 		fmt.Printf("❌ Error: %v\n", err)
 		os.Exit(1)
 	}
+	// Update state file after successful disconnect
+	UpdateStateFile()
 }
 
 // stopProfile is a reusable helper to stop a specific profile
@@ -85,9 +90,25 @@ func stopProfile(targetName string, silent bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to stop pritunl: %v", err)
 	}
-	defer UpdateStateFile()
+
+	// --- POLLING LOGIC START ---
 	if !silent {
-		fmt.Println("✅ Disconnected.")
+		fmt.Print("⏳ Waiting for disconnection...")
+	}
+
+	// Pass 'false' because we want Connected == false
+	err = waitForState(id, false, 10*time.Second)
+	if err != nil {
+		// Even if it times out, we assume the command was sent.
+		// We just warn the user.
+		if !silent {
+			fmt.Println("\n⚠️  Disconnect timed out (process might be stuck), but stop signal sent.")
+		}
+	}
+	// --- POLLING LOGIC END ---
+
+	if !silent {
+		fmt.Println("\n✅ Disconnected.")
 	} else {
 		fmt.Printf("✅ Stopped %s\n", targetName)
 	}

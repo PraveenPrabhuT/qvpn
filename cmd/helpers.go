@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // --- CONFIGURATION ---
@@ -179,5 +180,43 @@ func UpdateStateFile() {
 		// Write "DEV PROD"
 		data := strings.Join(activeAliases, " ")
 		_ = os.WriteFile(statePath, []byte(data), 0644)
+	}
+}
+
+// waitForState polls Pritunl until the profile with 'profileID' matches the 'desiredConnected' state.
+// It times out after 'timeout' duration.
+func waitForState(profileID string, desiredConnected bool, timeout time.Duration) error {
+	ticker := time.NewTicker(500 * time.Millisecond) // Check every 0.5s
+	defer ticker.Stop()
+
+	timeoutChan := time.After(timeout)
+
+	for {
+		select {
+		case <-timeoutChan:
+			return fmt.Errorf("timeout waiting for VPN state change")
+		case <-ticker.C:
+			// Fetch status
+			output, err := runCommand("pritunl", "list", "-j")
+			if err != nil {
+				continue // Ignore transient errors during polling
+			}
+
+			var profiles []Profile
+			if err := json.Unmarshal([]byte(output), &profiles); err != nil {
+				continue
+			}
+
+			// Find our profile
+			for _, p := range profiles {
+				if p.ID == profileID {
+					if p.Connected == desiredConnected {
+						return nil // Success! State matched.
+					}
+					// Optional: Print a dot to show aliveness
+					fmt.Print(".")
+				}
+			}
+		}
 	}
 }
